@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#0f5c58">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Consentimientos">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>Consentimiento de imagen</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-izq"><button id="btn-atras" class="btn-barra" type="button" hidden>‹ Atrás</button></div>
+    <h1 id="titulo">Consentimientos de imagen</h1>
+    <div class="topbar-der"><button id="btn-ajustes" class="btn-barra" type="button">Ajustes</button></div>
+  </header>
+
+  <main id="app">
+
+    <!-- ============ INICIO ============ -->
+    <section id="v-inicio" class="vista">
+      <div class="aviso aviso-alerta" id="aviso-config" hidden>
+        <div><strong>Configuración pendiente.</strong> Antes de recoger consentimientos hay que introducir los datos y la firma del doctor.</div>
+        <button type="button" class="btn prim" data-ir="ajustes">Configurar</button>
+      </div>
+      <div class="aviso aviso-info" id="aviso-backup" hidden>
+        <div id="aviso-backup-texto"></div>
+        <button type="button" class="btn sec" data-ir="ajustes">Copia de seguridad</button>
+      </div>
+
+      <button type="button" class="btn-nuevo" id="btn-nuevo">
+        <span class="mas" aria-hidden="true">+</span>
+        <span>Nuevo consentimiento</span>
+      </button>
+
+      <div class="lista-cab">
+        <h2>Consentimientos firmados <span id="contador" class="contador"></span></h2>
+        <input type="search" id="buscar" placeholder="Buscar por nombre, apellidos o DNI" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <ul id="lista" class="lista"></ul>
+      <p class="vacio" id="lista-vacia" hidden></p>
+      <div class="restaurar" id="restaurar-inicio" hidden>
+        <p>¿Ha reinstalado la app o cambiado de iPad? Puede recuperar los consentimientos desde un archivo exportado (ZIP o JSON).</p>
+        <label class="btn sec" for="input-importar">Importar copia de seguridad…</label>
+      </div>
+    </section>
+
+    <!-- ============ PASO 1: DATOS ============ -->
+    <section id="v-datos" class="vista" hidden>
+      <ol class="pasos"><li class="activo">Datos</li><li>Documento</li><li>Firma</li></ol>
+      <form id="f-datos" novalidate autocomplete="off">
+        <fieldset class="tarjeta">
+          <legend>Datos del paciente</legend>
+          <div class="fila">
+            <label>Nombre *<input name="nombre" required autocapitalize="words" autocorrect="off" spellcheck="false"></label>
+            <label>Apellidos *<input name="apellidos" required autocapitalize="words" autocorrect="off" spellcheck="false"></label>
+          </div>
+          <div class="fila">
+            <label class="estrecho">Documento
+              <select name="tipoDoc"><option value="DNI">DNI</option><option value="NIE">NIE</option><option value="PAS">Pasaporte</option></select>
+            </label>
+            <label>Número *<input name="documento" required autocapitalize="characters" autocorrect="off" spellcheck="false"></label>
+          </div>
+          <p class="error" data-error="documento"></p>
+          <p class="info" id="info-previos" hidden></p>
+        </fieldset>
+
+        <fieldset class="tarjeta">
+          <legend>Domicilio <small>(opcional)</small></legend>
+          <div class="fila">
+            <label class="ancho">Dirección (calle, avenida, plaza…)<input name="calle" autocorrect="off"></label>
+            <label class="estrecho">Número<input name="numero" autocorrect="off"></label>
+          </div>
+          <div class="fila">
+            <label>Localidad<input name="localidad" autocorrect="off"></label>
+            <label>Provincia<input name="provincia" autocorrect="off"></label>
+            <label class="estrecho">C.P.<input name="cp" inputmode="numeric" maxlength="5"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="tarjeta">
+          <label class="interruptor">
+            <input type="checkbox" name="conRep" id="con-rep">
+            <span class="interruptor-ui" aria-hidden="true"></span>
+            <span>Firma un <strong>representante legal</strong> <small>(menor de edad o paciente que no puede firmar)</small></span>
+          </label>
+          <div id="rep-campos" hidden>
+            <div class="fila">
+              <label class="ancho">Nombre y apellidos del representante *<input name="repNombre" autocapitalize="words" autocorrect="off" spellcheck="false"></label>
+            </div>
+            <div class="fila">
+              <label class="estrecho">Documento
+                <select name="repTipoDoc"><option value="DNI">DNI</option><option value="NIE">NIE</option><option value="PAS">Pasaporte</option></select>
+              </label>
+              <label>Número *<input name="repDocumento" autocapitalize="characters" autocorrect="off" spellcheck="false"></label>
+              <label>En calidad de *
+                <select name="repCalidad">
+                  <option value="padre">Padre</option>
+                  <option value="madre">Madre</option>
+                  <option value="tutor/a legal">Tutor/a legal</option>
+                  <option value="otro">Otro…</option>
+                </select>
+              </label>
+            </div>
+            <div class="fila" id="rep-otro" hidden>
+              <label class="ancho">Especifique la condición *<input name="repCalidadOtro" autocorrect="off"></label>
+            </div>
+            <p class="error" data-error="repDocumento"></p>
+          </div>
+        </fieldset>
+
+        <p class="error error-general" data-error="general"></p>
+        <div class="acciones">
+          <button type="button" class="btn sec" data-cancelar>Cancelar</button>
+          <button type="submit" class="btn prim">Continuar ›</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ============ PASO 2: DOCUMENTO ============ -->
+    <section id="v-documento" class="vista" hidden>
+      <ol class="pasos"><li class="hecho">Datos</li><li class="activo">Documento</li><li>Firma</li></ol>
+      <p class="instruccion">Lea el documento y <strong>marque las finalidades que autoriza</strong>. Puede marcar una, varias o todas.</p>
+      <article class="documento" id="doc-lectura"></article>
+      <label class="check-grande">
+        <input type="checkbox" id="chk-leido">
+        <span class="caja" aria-hidden="true"></span>
+        <span>He leído y comprendo el contenido de este documento.</span>
+      </label>
+      <p class="error error-general" id="err-documento"></p>
+      <div class="acciones">
+        <button type="button" class="btn sec" id="btn-doc-atras">‹ Volver a los datos</button>
+        <button type="button" class="btn prim" id="btn-a-firma">Continuar a la firma ›</button>
+      </div>
+    </section>
+
+    <!-- ============ PASO 3: FIRMA ============ -->
+    <section id="v-firma" class="vista" hidden>
+      <ol class="pasos"><li class="hecho">Datos</li><li class="hecho">Documento</li><li class="activo">Firma</li></ol>
+      <div class="tarjeta resumen" id="resumen-firma"></div>
+
+      <div class="pad-bloque" id="bloque-pad-paciente">
+        <div class="pad-cab">
+          <div><h3 id="pad-paciente-titulo">Firma del paciente</h3><span class="pad-nombre" id="pad-paciente-nombre"></span></div>
+          <button type="button" class="btn sec peq" data-borrar="paciente">Borrar</button>
+        </div>
+        <div class="pad-marco">
+          <canvas class="pad" id="pad-paciente"></canvas>
+          <div class="pad-guia" aria-hidden="true"><span>✕</span></div>
+        </div>
+        <p class="pad-ayuda">Firme dentro del recuadro con el dedo o con el lápiz.</p>
+      </div>
+
+      <div class="pad-bloque" id="bloque-pad-rep" hidden>
+        <div class="pad-cab">
+          <div><h3>Firma del representante legal</h3><span class="pad-nombre" id="pad-rep-nombre"></span></div>
+          <button type="button" class="btn sec peq" data-borrar="representante">Borrar</button>
+        </div>
+        <div class="pad-marco">
+          <canvas class="pad" id="pad-rep"></canvas>
+          <div class="pad-guia" aria-hidden="true"><span>✕</span></div>
+        </div>
+        <p class="pad-ayuda">Firme dentro del recuadro con el dedo o con el lápiz.</p>
+      </div>
+
+      <p class="error error-general" id="err-firma"></p>
+      <div class="acciones">
+        <button type="button" class="btn sec" id="btn-firma-atras">‹ Volver al documento</button>
+        <button type="button" class="btn prim grande" id="btn-firmar">Firmar y guardar</button>
+      </div>
+    </section>
+
+    <!-- ============ ÉXITO ============ -->
+    <section id="v-exito" class="vista" hidden>
+      <div class="exito">
+        <div class="exito-icono" aria-hidden="true">✓</div>
+        <h2>Consentimiento firmado y guardado</h2>
+        <p id="exito-texto"></p>
+        <p class="exito-gracias">Muchas gracias. Ya puede devolver el iPad al personal del servicio.</p>
+        <div class="acciones columna">
+          <button type="button" class="btn prim" id="btn-exito-pdf">Compartir / guardar PDF</button>
+          <button type="button" class="btn sec" id="btn-exito-ver">Ver el documento firmado</button>
+          <button type="button" class="btn sec" id="btn-exito-inicio">Volver al inicio</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DETALLE ============ -->
+    <section id="v-detalle" class="vista" hidden>
+      <div class="detalle-cab">
+        <div id="detalle-integridad" class="sello"></div>
+        <div class="acciones fila-botones">
+          <button type="button" class="btn prim" id="btn-detalle-pdf">Compartir / guardar PDF</button>
+        </div>
+      </div>
+      <article class="documento" id="doc-detalle"></article>
+      <div class="tarjeta evidencias" id="evidencias"></div>
+      <div class="zona-peligro">
+        <button type="button" class="btn peligro" id="btn-eliminar">Eliminar este consentimiento</button>
+      </div>
+    </section>
+
+    <!-- ============ AJUSTES ============ -->
+    <section id="v-ajustes" class="vista" hidden>
+      <form id="f-ajustes" class="tarjeta" novalidate autocomplete="off">
+        <h2>Responsable del tratamiento (doctor)</h2>
+        <p class="nota">Estos datos aparecen en el texto del consentimiento. Se guardan solo en este iPad.</p>
+        <div class="fila">
+          <label class="ancho">Nombre tal y como aparece en el documento *<input name="nombre" placeholder="Ej.: Dr. D. Nombre Apellido Apellido" autocorrect="off" spellcheck="false"></label>
+        </div>
+        <div class="fila">
+          <label class="estrecho2">CIF / NIF *<input name="nif" autocapitalize="characters" autocorrect="off" spellcheck="false"></label>
+          <label class="ancho">Domicilio a efectos *<input name="domicilio" placeholder="Calle, número, C.P. y localidad" autocorrect="off"></label>
+        </div>
+        <div class="fila">
+          <label>Correo para ejercer derechos RGPD *<input name="email" type="email" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+          <label>Página web (política de privacidad)<input name="web" type="url" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+        </div>
+        <div class="fila">
+          <label class="estrecho2">Lugar de firma *<input name="lugar" placeholder="Ej.: Madrid" autocorrect="off"></label>
+        </div>
+
+        <h3>Firma del doctor *</h3>
+        <p class="nota">Se dibuja una sola vez y se añade automáticamente a cada consentimiento.</p>
+        <div id="firma-doctor-actual" class="firma-guardada" hidden>
+          <img id="img-firma-doctor" alt="Firma del doctor guardada">
+          <button type="button" class="btn sec peq" id="btn-rehacer-firma-doctor">Cambiar firma</button>
+        </div>
+        <div id="firma-doctor-pad" class="pad-bloque sin-margen">
+          <div class="pad-cab"><div><h3>Firme aquí</h3></div><button type="button" class="btn sec peq" data-borrar="doctor">Borrar</button></div>
+          <div class="pad-marco"><canvas class="pad" id="pad-doctor"></canvas><div class="pad-guia" aria-hidden="true"><span>✕</span></div></div>
+        </div>
+        <p class="error error-general" id="err-ajustes"></p>
+        <div class="acciones">
+          <button type="submit" class="btn prim">Guardar ajustes</button>
+        </div>
+      </form>
+
+      <div class="tarjeta">
+        <h2>Exportar e importar consentimientos</h2>
+        <p class="nota">Los consentimientos se guardan <strong>únicamente en este iPad</strong>. Si se borra la app de la pantalla de inicio o se restablece el iPad, se pierden. Exporte con regularidad y guarde el archivo en Archivos, iCloud Drive, un pendrive o un ordenador del servicio. Funciona sin internet.</p>
+        <p class="nota">El archivo <strong>ZIP</strong> contiene un <strong>PDF por cada consentimiento</strong> (se abre en cualquier ordenador) y el archivo <code>copia_seguridad.json</code>, que sirve para restaurarlos en la app con <em>Importar</em>.</p>
+        <p id="estado-backup" class="estado"></p>
+        <div class="acciones izquierda">
+          <button type="button" class="btn prim" id="btn-exportar">Exportar todo (ZIP con PDF)</button>
+          <label class="btn sec" for="input-importar">Importar copia…</label>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Información</h2>
+        <p id="info-almacen" class="estado"></p>
+        <p class="nota">Para que nadie pueda salir de la app mientras el paciente firma, active en el iPad <em>Ajustes › Accesibilidad › Acceso guiado</em> y pulse tres veces el botón lateral dentro de la app.</p>
+        <p class="nota" id="version-app"></p>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-caja" role="dialog" aria-modal="true">
+      <h3 id="modal-titulo"></h3>
+      <div id="modal-cuerpo"></div>
+      <div class="acciones" id="modal-acciones"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <input type="file" id="input-importar" class="oculto-visual" accept=".zip,.json,application/zip,application/json" tabindex="-1" aria-hidden="true">
+
+  <script src="pdf.js"></script>
+  <script src="zip.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
